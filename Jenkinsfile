@@ -1,49 +1,53 @@
 pipeline {
-    agent any  // или docker 'golang:latest'
+    agent any
 
     stages {
         // Этап 1: Забираем код из GitHub
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],  // или ваша ветка
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/egorikk58/Jenkins_pipeline_test.git',
-                        credentialsId: 'github-creds'  // ID из настроек Jenkins
-                    ]]
-                ])
+                checkout scm
             }
         }
 
-        // Этап 2: Устанавливаем зависимости Go
+        // Этап 2: Инициализация Go-модуля (если нужно)
+        stage('Init Go Module') {
+            steps {
+                script {
+                    // Проверяем, есть ли go.mod
+                    def hasGoMod = fileExists('go.mod')
+                    if (!hasGoMod) {
+                        sh 'go mod init github.com/your-username/your-repo'
+                    }
+                }
+            }
+        }
+
+        // Этап 3: Установка зависимостей
         stage('Install Dependencies') {
             steps {
-                sh 'go mod download'
+                sh 'go mod tidy'
             }
         }
 
-        // Этап 3: Запускаем тесты (если есть)
+        // Этап 4: Запуск тестов
         stage('Test') {
             steps {
                 sh 'go test ./...'
             }
         }
 
-        // Этап 4: Собираем бинарник
+        // Этап 5: Сборка
         stage('Build') {
             steps {
-                sh 'go build -o myapp'  // создаёт бинарник 'myapp'
-                archiveArtifacts artifacts: 'myapp', fingerprint: true  // сохраняем артефакт
+                sh 'go build -o myapp'
+                archiveArtifacts artifacts: 'myapp', fingerprint: true
             }
         }
     }
 
-    // Пост-обработка (уведомления, очистка)
     post {
         always {
-            cleanWs()  // очистка workspace
+            cleanWs()
         }
         success {
             echo '✅ Сборка успешна!'
