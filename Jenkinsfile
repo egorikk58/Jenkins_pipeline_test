@@ -16,7 +16,7 @@ pipeline {
                     // Проверяем, есть ли go.mod
                     def hasGoMod = fileExists('go.mod')
                     if (!hasGoMod) {
-                        sh 'go mod init github.com/your-username/your-repo'
+                        sh 'go mod init https://github.com/egorikk58/Jenkins_pipeline_test.git'
                     }
                 }
             }
