@@ -9,14 +9,13 @@ pipeline {
             }
         }
 
-        // Этап 2: Инициализация Go-модуля (если нужно)
+        // Этап 2: Инициализация Go-модуля
         stage('Init Go Module') {
             steps {
                 script {
-                    // Проверяем, есть ли go.mod
-                    def hasGoMod = fileExists('go.mod')
-                    if (!hasGoMod) {
-                        sh 'go mod init https://github.com/egorikk58/Jenkins_pipeline_test.git'
+                    if (!fileExists('go.mod')) {
+                        // Используем правильный формат имени модуля
+                        sh 'go mod init github.com/egorikk58/Jenkins_pipeline_test'
                     }
                 }
             }
@@ -29,7 +28,7 @@ pipeline {
             }
         }
 
-        // Этап 4: Запуск тестов
+        // Этап 4: Запуск тестов (если есть)
         stage('Test') {
             steps {
                 sh 'go test ./...'
